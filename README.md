@@ -1,7 +1,5 @@
 # Contribution Journal
 
-A journal documenting my journey contributing to open source, starting with my first selected issue.
-
 ## Selected Issue
 
 **Project:** Open WebUI (`open-webui/open-webui`)
