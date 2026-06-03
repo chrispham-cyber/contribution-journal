@@ -33,21 +33,3 @@ My background is in cybersecurity, Python, AI tooling, and bug hunting. This iss
 ### What does a successful fix look like?
 
 Reliably reproduce the clipped popup near the left edge, then update the popup's positioning logic so the "Ask a question" box is always clamped within the visible viewport (no overflow on the left or right edge), verified across browsers. The change is accompanied by a clear description of the reproduction steps and, where appropriate, a test or before/after screenshots.
-
----
-
-## Six-Point Checklist
-
-| Criterion | Status |
-| --- | --- |
-| Understandable in one sentence | Yes |
-| Solvable in about 3-4 weeks | Yes — small frontend fix |
-| Matches skills I have or can learn quickly | Yes |
-| Active and not already claimed | Yes — open, no assignee |
-| Maintainer comments / helpful context | Yes — collaborator comment on reproducibility |
-| Project has clear setup documentation | Yes |
-| No open / linked PR | Yes — "No branches or pull requests" |
-
-## Progress Log
-
-- **Day 1:** Browsed candidate issues across cybersecurity / Python / AI projects, ran the six-point checklist, selected issue #24577, forked the repository, and posted an interest comment on the issue.
