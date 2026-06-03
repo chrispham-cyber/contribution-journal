@@ -5,8 +5,11 @@ A journal documenting my journey contributing to open source, starting with my f
 ## Selected Issue
 
 **Project:** Open WebUI (`open-webui/open-webui`)
+
 **Issue:** [#24577 — "Ask" button renders the box out of the view](https://github.com/open-webui/open-webui/issues/24577)
+
 **Status:** Open · No assignee · No linked pull request
+
 **Target timeline:** 1-5 days to claim and scope; full fix within ~3-4 weeks
 
 ---
