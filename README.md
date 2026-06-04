@@ -18,16 +18,16 @@ It also matches my learning goals well: I want to get better at reading other pe
 ## Understanding the Issue
 
 ### Problem Description
-[In my own words: when beets imports music and the lyrics plugin is enabled, multiple errors are raised while trying to fetch lyrics from one or more lyrics sources, interrupting or cluttering the import process.]
+When a user runs an import with the lyrics plugin enabled (on beets v2.3.0), lyrics fail to fetch and the import produces multiple errors instead of either succeeding or failing quietly. The discussion traces the failures largely to the "tekstowo" lyrics backend, which appears to be blocking requests (user-agent blocking) and/or returning content the plugin can no longer parse. The result is a noisy, broken import experience rather than a clean "lyrics not found" outcome. This matters because lyrics fetching is a popular plugin feature, and a single failing backend should degrade gracefully rather than spam errors during every import.
 
 ### Expected Behavior
-[Lyrics fetching should either succeed, or fail gracefully with a clean, non-fatal warning, without throwing multiple unhandled errors during import.]
+Lyrics fetching should either succeed, or fail gracefully with a single clean, non-fatal warning, without throwing multiple unhandled errors during the import process.
 
 ### Current Behavior
-[The import surfaces multiple errors while fetching lyrics — to be confirmed and documented precisely once I reproduce it locally.]
+With the lyrics plugin enabled, importing an album surfaces several errors while attempting to fetch lyrics (notably from the tekstowo backend), cluttering the verbose import output and preventing lyrics from being saved.
 
 ### Affected Components
-[Most likely the lyrics plugin in beetsplug/lyrics.py and its backend source handlers — to be confirmed during reproduction.]
+Most likely the lyrics plugin in beetsplug/lyrics.py and its per-backend source handlers (especially the tekstowo backend), plus the related error handling that decides how a failed lyrics source is reported during import. To be confirmed during reproduction.
 
 ---
 
@@ -37,9 +37,9 @@ It also matches my learning goals well: I want to get better at reading other pe
 [Notes on setting up a local beets development environment — Python version, virtualenv, installing in editable mode, enabling the lyrics plugin. To be filled in as I work.]
 
 ### Steps to Reproduce
-1. [Step 1 — set up beets with the lyrics plugin enabled]
-2. [Step 2 — run an import on a sample library]
-3. [Observed result — the lyrics fetch errors appear]
+1. Install/check out beets with the lyrics plugin enabled and at least one affected source (e.g. tekstowo) configured.
+2. Run a verbose import on a sample album: `beet -vv import "/path/to/album"`.
+3. Observe the multiple lyrics-fetch errors in the output and that lyrics are not saved.
 
 ### Reproduction Evidence
 - **Commit showing reproduction:** [Link to commit in my fork]
