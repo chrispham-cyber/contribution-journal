@@ -3,7 +3,7 @@
 **Contribution Number:** 1
 **Student:** Hoang (Chris) Pham
 **Issue:** https://github.com/beetbox/beets/issues/5998
-**Status:** Phase II — Complete
+**Status:** Phase III — Complete
 
 ---
 
@@ -147,3 +147,53 @@ https://github.com/chrispham-cyber/beets/tree/fix-issue-5998
 - The full `lyrics` test suite still passes (no regressions in other backends).
 
 > **Scope note / honest finding.** Two maintainers disagree on the long-term direction — one prefers the empty-user-agent workaround (this plan), the other prefers removing the bit-rotting `tekstowo` backend entirely because spoofing the agent is "cat and mouse." I'm proceeding with the smaller, lower-risk workaround and will confirm direction with maintainers on the issue before finalizing the PR. The `AttributeError` from the original report reproduces only on outdated `requests` and is therefore an environment issue, not part of this fix.
+
+---
+
+## Implementation Notes
+
+**What I built.** I implemented the Phase II plan as-is — no surprises, because the reproduction had already pinned the root cause.
+
+- **The fix** (`beetsplug/lyrics.py`): added a `get()` override to the `Tekstowo` backend that sets an empty `User-Agent` on its requests, so tekstowo no longer returns HTTP 403. It reuses the existing `RequestHandler.get()` path, so the change is six lines:
+  ```python
+  def get(self, *args, **kwargs):
+      # Tekstowo blocks the default beets user-agent with HTTP 403, so send
+      # an empty one instead. See beetbox/beets#5998.
+      kwargs.setdefault("headers", {})
+      kwargs["headers"]["User-Agent"] = ""
+      return super().get(*args, **kwargs)
+  ```
+- **The test** (`test/plugins/test_lyrics.py`): added `TestTekstowoUserAgent.test_request_omits_beets_user_agent`, which mocks the tekstowo URL with `requests_mock` and asserts the outgoing request's `User-Agent` header is empty.
+- **The changelog** (`docs/changelog.rst`): added a bug-fix entry referencing `:bug:`5998``.
+
+**Files modified:**
+- `beetsplug/lyrics.py` — the `Tekstowo.get()` override.
+- `test/plugins/test_lyrics.py` — the regression test.
+- `docs/changelog.rst` — the bug-fix entry.
+
+### Challenges Faced
+
+- **Telling the real bug apart from an environment problem.** The original report's most dramatic symptom (`AttributeError: module 'requests' has no attribute 'JSONDecodeError'`) is *not* a code bug: beets pins `requests >= 2.32.5`, where that attribute exists. The reporter had an outdated `requests` in a broken mixed snap + pip install. I confirmed this by simulating an old `requests` in my reproduction script. Conclusion: keep the fix narrowly on the tekstowo user-agent.
+- **No Poetry locally.** beets uses Poetry, which I didn't have. I used a plain venv + editable install (`pip install -e '.[lyrics]'`), which is enough to run the plugin and the tests.
+- **Confirming the test actually captures the header.** I verified with `requests_mock.last_request.headers["User-Agent"] == ""`, then ran `ruff format`, which reformatted only my new test (the rest of the diff stayed scoped to my changes).
+
+### Testing Strategy
+
+- **New regression test passes:**
+  ```
+  test/plugins/test_lyrics.py::TestTekstowoUserAgent::test_request_omits_beets_user_agent PASSED
+  ```
+- **No regressions:** the full lyrics suite passes — `113 passed, 15 skipped` (the skips are network-gated integration tests that don't run by default).
+- **Style gate:** `ruff check` passes and both changed files are `ruff format`-clean (beets' enforced style).
+- **Behavioral check:** re-running `reproduce_issue_5998.py` shows the empty user-agent now gets HTTP 200 from tekstowo instead of 403.
+
+### Code Changes
+
+Working branch: https://github.com/chrispham-cyber/beets/tree/fix-issue-5998
+
+Commits on the branch:
+- `ac81a94` — `lyrics: avoid tekstowo HTTP 403 by sending an empty user-agent` (fix + changelog)
+- `f5eca62` — `lyrics: test that tekstowo requests omit the beets user-agent`
+- `c0416b4` — reproduction script (Phase II evidence; will be removed before opening the PR in Phase IV)
+
+> Next (Phase IV): confirm the empty-user-agent direction with maintainers on the issue, drop the reproduction script from the branch, and open the pull request with `Fixes #5998`.
